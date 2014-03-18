@@ -90,37 +90,6 @@ class CMISService extends CMISRepositoryWrapper {
     const MIME_CMIS_TREE      = 'application/cmistree+xml';
     const MIME_CMIS_QUERY     = 'application/cmisquery+xml';
 
-    const QUERY_TEMPLATE = <<<EOT
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<cmis:query xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
-            xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200908/"
-            xmlns:atom="http://www.w3.org/2005/Atom"
-            xmlns:app="http://www.w3.org/2007/app"
-            xmlns:cmisra="http://docs.oasisopen.org/ns/cmis/restatom/200908/">
-    <cmis:statement><![CDATA[{q}]]></cmis:statement>
-    <cmis:searchAllVersions>{searchAllVersions}</cmis:searchAllVersions>
-    <cmis:includeAllowableActions>{includeAllowableActions}</cmis:includeAllowableActions>
-    <cmis:includeRelationships>{includeRelationships}</cmis:includeRelationships>
-    <cmis:renditionFilter>{renditionFilter}</cmis:renditionFilter>
-    <cmis:maxItems>{maxItems}</cmis:maxItems>
-    <cmis:skipCount>{skipCount}</cmis:skipCount>
-</cmis:query>
-EOT;
-    const ENTRY_TEMPLATE = <<<EOT
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<atom:entry xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
-            xmlns:cmism="http://docs.oasis-open.org/ns/cmis/messaging/200908/"
-            xmlns:atom="http://www.w3.org/2005/Atom"
-            xmlns:app="http://www.w3.org/2007/app"
-            xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
-    <atom:title>{title}</atom:title>
-    {SUMMARY}
-    {CONTENT}
-    <cmisra:object><cmis:properties>{PROPERTIES}</cmis:properties></cmisra:object>
-</atom:entry>
-EOT;
-
-
 	private $_link_cache;
 	private $_title_cache;
 	private $_objTypeId_cache;

@@ -63,7 +63,7 @@ class CMISRepositoryWrapper
     private $username;
     private $password;
     private $authenticated;
-    private $workspace;
+    protected $workspace;
     private $last_request;
     private $do_not_urlencode;
 
@@ -237,7 +237,13 @@ class CMISRepositoryWrapper
         $session = curl_init($url);
         curl_setopt($session, CURLOPT_HEADER, false);
         curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($session, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($session, CURLOPT_CUSTOMREQUEST, $method);
+        if (substr($url, 0, 5) == 'https') {
+            curl_setopt($session, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($session, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($session, CURLOPT_SSLVERSION, 3);
+        }
         if ($this->username)   { curl_setopt($session, CURLOPT_USERPWD,    "{$this->username}:{$this->password}"); }
         if ($contentType)      { curl_setopt($session, CURLOPT_HTTPHEADER, array ("Content-Type: " . $contentType)); }
         if ($content)          { curl_setopt($session, CURLOPT_POSTFIELDS, $content); }
@@ -253,19 +259,25 @@ class CMISRepositoryWrapper
 
 
         //TODO: Make this storage optional
-        $retval = new stdClass();
-        $retval->url               = $url;
-        $retval->method            = $method;
-        $retval->content_sent      = $content;
-        $retval->content_type_sent = $contentType;
-        $retval->body              = curl_exec($session);
-        $retval->code              = curl_getinfo($session, CURLINFO_HTTP_CODE);
-        $retval->content_type      = curl_getinfo($session, CURLINFO_CONTENT_TYPE);
-        $retval->content_length    = curl_getinfo($session, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-        curl_close($session);
+        $response = curl_exec($session);
+        if ($response) {
+			$retval = new stdClass();
+			$retval->url               = $url;
+			$retval->method            = $method;
+			$retval->content_sent      = $content;
+			$retval->content_type_sent = $contentType;
+			$retval->body              = $response;
+			$retval->code              = curl_getinfo($session, CURLINFO_HTTP_CODE);
+			$retval->content_type      = curl_getinfo($session, CURLINFO_CONTENT_TYPE);
+			$retval->content_length    = curl_getinfo($session, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+			curl_close($session);
 
-        $this->last_request = $retval;
-        return $retval;
+			$this->last_request = $retval;
+			return $retval;
+        }
+        else {
+            echo 'Curl error: '.curl_error($session)."\n";
+        }
     }
 
     //---------------------------------------------------------------
@@ -455,7 +467,18 @@ class CMISRepositoryWrapper
 				//
 				// Removed error suppression.  We might need some extra checks on the
 				// DOM elements before working with them
-				$retval->properties[$pn->attributes->getNamedItem("propertyDefinitionId")->nodeValue] = $pn->getElementsByTagName("value")->item(0)->nodeValue;
+				//
+				// Not all children of <cmis:properties> are <cmis:propertyString>
+				$i = $pn->attributes->getNamedItem("propertyDefinitionId");
+				if ($i) {
+					$k = $i->nodeValue;
+					$vs = $pn->getElementsByTagName("value");
+					if ($vs->length) {
+						$v = $vs->item(0)->nodeValue;
+
+						$retval->properties[$k] = $v;
+					}
+				}
 			}
         }
 
