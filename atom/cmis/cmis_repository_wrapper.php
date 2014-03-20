@@ -257,7 +257,6 @@ class CMISRepositoryWrapper
             }
         }
 
-
         //TODO: Make this storage optional
         $response = curl_exec($session);
         if ($response) {
@@ -361,10 +360,10 @@ class CMISRepositoryWrapper
      *  These links are distinquished by the mime type attribute, but these are probably the only two links that share the same rel ..
      *    so this was done as a one off
      * @internal
-     * @param DOMDocument $xmlnode
+     * @param DOMNode $xmlnode
      * @return array
 	 */
-    private static function getLinksArray(DOMDocument $xmlnode)
+    private static function getLinksArray(DOMNode $xmlnode)
     {
         $links = array ();
         $link_nodes = $xmlnode->getElementsByTagName("link");
@@ -388,7 +387,7 @@ class CMISRepositoryWrapper
 	 * @param string $xmldata
 	 * @return array
 	 */
-	private static function extractAllowableActions($xmldata)
+	protected static function extractAllowableActions($xmldata)
     {
         $doc = new DOMDocument();
         $doc->loadXML($xmldata);
@@ -397,10 +396,10 @@ class CMISRepositoryWrapper
 
 	/**
 	 * @internal
-	 * @param DOMDocument $xmlnode
+	 * @param DOMNode $xmlnode
 	 * @return array
 	 */
-    private static function extractAllowableActionsFromNode($xmlnode)
+    private static function extractAllowableActionsFromNode(DOMNode $xmlnode)
     {
         $result = array();
         $allowableActions = $xmlnode->getElementsByTagName("allowableActions");
@@ -434,10 +433,10 @@ class CMISRepositoryWrapper
      * RRM -- NEED TO ADD ALLOWABLEACTIONS
      *
 	 * @internal
-	 * @param DOMDocument
+	 * @param DOMNode
 	 * @return stdClass
 	 */
-    private static function extractObjectFromNode(DOMDocument $xmlnode)
+    private static function extractObjectFromNode(DOMNode $xmlnode)
     {
         $retval = new stdClass();
         $retval->links = self::getLinksArray($xmlnode);
@@ -512,7 +511,7 @@ class CMISRepositoryWrapper
 	 * @param string $xmldata
 	 * @return stdClass
 	 */
-    private static function extractTypeDef($xmldata)
+    protected static function extractTypeDef($xmldata)
     {
         $doc = new DOMDocument();
         $doc->loadXML($xmldata);
@@ -527,10 +526,10 @@ class CMISRepositoryWrapper
      * RRM -- NEED TO ADD ALLOWABLEACTIONS
      *
 	 * @internal
-	 * @param DOMDocument $xmlnode
+	 * @param DOMNode $xmlnode
 	 * @return stdClass
 	 */
-    private static function extractTypeDefFromNode(DOMDocument $xmlnode)
+    private static function extractTypeDefFromNode(DOMNode $xmlnode)
     {
         $retval = new stdClass();
         $retval->links = self::getLinksArray($xmlnode);
@@ -592,7 +591,7 @@ class CMISRepositoryWrapper
 	 * @param string $xmldata
 	 * @return stdClass
 	 */
-    private static function extractObjectFeed($xmldata)
+    protected static function extractObjectFeed($xmldata)
     {
         //Assumes only one workspace for now
         $doc = new DOMDocument();
@@ -609,10 +608,10 @@ class CMISRepositoryWrapper
      *   and a property "numItems" that holds the total number of items available.
      *
 	 * @internal
-	 * @param DOMDocument $xmlnode
+	 * @param DOMNode $xmlnode
 	 * @return stdClass
 	 */
-    private static function extractObjectFeedFromNode($xmlnode)
+    private static function extractObjectFeedFromNode(DOMNode $xmlnode)
     {
         $retval = new stdClass();
         // extract total number of items
@@ -635,7 +634,7 @@ class CMISRepositoryWrapper
 	 * @param string $xmldata
 	 * @return stdClass
 	 */
-    private static function extractTypeFeed($xmldata)
+    protected static function extractTypeFeed($xmldata)
     {
         //Assumes only one workspace for now
         $doc = new DOMDocument();
@@ -651,8 +650,9 @@ class CMISRepositoryWrapper
      *   -- one hash table indexed by objectID
      *
 	 * @internal
+	 * @param DOMNode $xmlnode
 	 */
-    private static function extractTypeFeedFromNode($xmlnode)
+    private static function extractTypeFeedFromNode(DOMNode $xmlnode)
     {
         $retval = new stdClass();
         $retval->objectList  = array ();
@@ -689,10 +689,10 @@ class CMISRepositoryWrapper
      *  General Repository Information
      *
 	 * @internal
-	 * @param DOMDocument $xmlnode
+	 * @param DOMNode $xmlnode
 	 * @return stdClass
 	 */
-    private static function extractWorkspaceFromNode(DOMDocument $xmlnode)
+    private static function extractWorkspaceFromNode(DOMNode $xmlnode)
     {
         $retval = new stdClass();
         $retval->links              = self::getLinksArray($xmlnode);
