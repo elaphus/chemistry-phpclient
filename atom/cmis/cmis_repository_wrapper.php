@@ -440,9 +440,11 @@ class CMISRepositoryWrapper
     {
         $retval = new stdClass();
         $retval->links = self::getLinksArray($xmlnode);
-        $retval->properties = array ();
+        $retval->properties = array();
 
-        $renditions = $xmlnode->getElementsByTagName("object")->item(0)->getElementsByTagName("rendition");
+        $object = $xmlnode->getElementsByTagName("object")->item(0);
+
+        $renditions = $object->getElementsByTagName("rendition");
 		// Add renditions to CMIS object
 		$renditionArray = array();
 		if ($renditions->length > 0) {
@@ -459,26 +461,28 @@ class CMISRepositoryWrapper
 		}
 		$retval->renditions = $renditionArray;
 
-        $prop_nodes = $xmlnode->getElementsByTagName("object")->item(0)->getElementsByTagName("properties")->item(0)->childNodes;
-        foreach ($prop_nodes as $pn) {
-        	if ($pn->attributes) {
-				//supressing errors since PHP sometimes sees DOM elements as "non-objects"
-				//
-				// Removed error suppression.  We might need some extra checks on the
-				// DOM elements before working with them
-				//
-				// Not all children of <cmis:properties> are <cmis:propertyString>
-				$i = $pn->attributes->getNamedItem("propertyDefinitionId");
-				if ($i) {
-					$k = $i->nodeValue;
-					$vs = $pn->getElementsByTagName("value");
-					if ($vs->length) {
-						$v = $vs->item(0)->nodeValue;
+        $properties = $object->getElementsByTagName("properties");
+        foreach ($properties as $prop_node) {
+            foreach ($prop_node->childNodes as $pn) {
+                if ($pn->attributes) {
+                    //supressing errors since PHP sometimes sees DOM elements as "non-objects"
+                    //
+                    // Removed error suppression.  We might need some extra checks on the
+                    // DOM elements before working with them
+                    //
+                    // Not all children of <cmis:properties> are <cmis:propertyString>
+                    $i = $pn->attributes->getNamedItem("propertyDefinitionId");
+                    if ($i) {
+                        $k = $i->nodeValue;
+                        $vs = $pn->getElementsByTagName("value");
+                        if ($vs->length) {
+                            $v = $vs->item(0)->nodeValue;
 
-						$retval->properties[$k] = $v;
-					}
-				}
-			}
+                            $retval->properties[$k] = $v;
+                        }
+                    }
+                }
+            }
         }
 
         $retval->uuid = $xmlnode->getElementsByTagName("id")->item(0)->nodeValue;
