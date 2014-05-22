@@ -1,0 +1,4 @@
+<?php
+define('CMIS_URL',      'http://localhost/alfresco/cmisatom');
+define('CMIS_USERNAME', 'username');
+define('CMIS_PASSWORD', 'password');
