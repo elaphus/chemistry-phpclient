@@ -28,11 +28,11 @@ class CMISObject
 	 */
 	public function get($property)
 	{
-		if ( isset($this->succinctProperties)) {
+		if ( isset($this->succinctProperties->$property)) {
 			return $this->succinctProperties->$property;
 		}
-		else {
-			return $this->properties->$property->value;
+		elseif (isset($this->properties->$property->value)) {
+			return    $this->properties->$property->value;
 		}
 	}
 }

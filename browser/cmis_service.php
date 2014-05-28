@@ -137,7 +137,20 @@ class CMISService extends AuthenticatedWebService
 	public function createItem($properties, $folderId=null) { throw new Exception('methodNotImplemented'); }
 	public function getAllowableActions($objectId) { throw new Exception('methodNotImplemented'); }
 	public function getProperties($objectId) { throw new Exception('methodNotImplemented'); }
-	public function getContentStream($objectId, $streamId=null) { throw new Exception('methodNotImplemented'); }
+
+	/**
+	 * @param string $objectId
+	 * @param string $streamId
+	 */
+	public function getContentStream($objectId, $streamId=null)
+	{
+		$url = $this->rootFolderUrl."?cmisaction=getContentStream&objectId=$objectId";
+		if ($streamId) {
+			$url.= "&streamId=$streamId";
+		}
+		return $this->doRequest($url);
+	}
+
 	public function getRenditions($objectId) { throw new Exception('methodNotImplemented'); }
 	public function updateProperties($objectId, $properties) { throw new Exception('methodNotImplemented'); }
 	public function bulkUpdateProperties($objects) { throw new Exception('methodNotImplemented'); }
@@ -153,7 +166,14 @@ class CMISService extends AuthenticatedWebService
 	public function removeObjectFromFolder($objectId, $folderId=null) { throw new Exception('methodNotImplemented'); }
 
 	// Discovery Services
-	public function query($query) { throw new Exception('methodNotImplemented'); }
+	public function query($query)
+	{
+		$url = $this->repositoryUrl."/doQuery?q=".urlencode($query);
+		if ($this->succinct) { $url.= '&succinct=true'; }
+
+		return $this->doJSONRequest($url);
+	}
+
 	public function getContentChanges() { throw new Exception('methodNotImplemented'); }
 
 	// Versioning Services
