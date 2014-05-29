@@ -5,7 +5,6 @@
  * @author Cliff Ingham <inghamn@bloomington.in.gov>
  */
 include __DIR__.'/authenticated_web_service.php';
-include __DIR__.'/cmis_object.php';
 
 class CMISService extends AuthenticatedWebService
 {
@@ -67,7 +66,7 @@ class CMISService extends AuthenticatedWebService
 		$url = "{$this->rootFolderUrl}?objectId=$folderId&cmisselector=parent";
 		if ($this->succinct) { $url.= '&succinct=true'; }
 
-		return new CMISObject($this->doJSONRequest($url));
+		return $this->doJSONRequest($url);
 	}
 
 	/**
@@ -114,7 +113,7 @@ class CMISService extends AuthenticatedWebService
 		$url = $this->rootFolderUrl."?objectId=$objectId&cmisselector=object";
 		if ($this->succinct) { $url.= '&succinct=true'; }
 
-		return new CMISObject($this->doJSONRequest($url));
+		return $this->doJSONRequest($url);
 	}
 
 	/**
@@ -126,7 +125,7 @@ class CMISService extends AuthenticatedWebService
 		$url = $this->rootFolderUrl.$path.'?cmisselector=object';
 		if ($this->succinct) { $url.= '&succinct=true'; }
 
-		return new CMISObject($this->doJSONRequest($url));
+		return $this->doJSONRequest($url);
 	}
 
 	public function createDocument($properties, $folderId=null) { throw new Exception('methodNotImplemented'); }
