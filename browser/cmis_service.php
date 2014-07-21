@@ -13,6 +13,7 @@ class CMISService extends AuthenticatedWebService
 	protected $rootFolderUrl;
 
 	public $succinct = false;
+	public $maxItems = 20;
 
 	public function __construct($repositoryUrl, $username, $password, $repositoryId)
 	{
@@ -34,7 +35,8 @@ class CMISService extends AuthenticatedWebService
 	 */
 	protected function doJSONRequest($url, $method = 'GET')
 	{
- 		$json = json_decode($this->doRequest($url, $method));
+		$response = $this->doRequest($url, $method);
+ 		$json = json_decode($response);
 		if ($json) {
 			if (isset($json->exception)) {
 				throw new Exception($json->message);
@@ -71,11 +73,13 @@ class CMISService extends AuthenticatedWebService
 
 	/**
 	 * @param string $folderId
+	 * @param int $skipCount
 	 * @return stdClass
 	 */
-	public function getChildren($folderId)
+	public function getChildren($folderId, $skipCount=0)
 	{
-		$url = $this->rootFolderUrl."?objectId=$folderId";
+		$url = $this->rootFolderUrl."?objectId=$folderId&maxItems={$this->maxItems}";
+		if ($skipCount)      { $url.= '&skipCount='.(int)$skipCount; }
 		if ($this->succinct) { $url.= '&succinct=true'; }
 
 		return $this->doJSONRequest($url);
@@ -88,12 +92,14 @@ class CMISService extends AuthenticatedWebService
 	 * It is added to this class for consistency in function naming.
 	 *
 	 * @param string $path
+	 * @param int $skipCount
 	 * @return stdClass
 	 */
-	public function getChildrenByPath($path)
+	public function getChildrenByPath($path, $skipCount=0)
 	{
-		$url = $this->rootFolderUrl.$path;
-		if ($this->succinct) { $url.= '?succinct=true'; }
+		$url = $this->rootFolderUrl."$path?maxItems={$this->maxItems}";
+		if ($skipCount)      { $url.= '&skipCount='.(int)$skipCount; }
+		if ($this->succinct) { $url.= '&succinct=true'; }
 
 		return $this->doJSONRequest($url);
 	}
@@ -165,9 +171,15 @@ class CMISService extends AuthenticatedWebService
 	public function removeObjectFromFolder($objectId, $folderId=null) { throw new Exception('methodNotImplemented'); }
 
 	// Discovery Services
-	public function query($query)
+    /**
+     * @param string $query
+     * @param int $skipCount
+     * @return stdClass
+     */
+	public function query($query, $skipCount=0)
 	{
-		$url = $this->repositoryUrl."/doQuery?q=".urlencode($query);
+		$url = $this->repositoryUrl."/doQuery?maxItems={$this->maxItems}&q=".urlencode($query);
+		if ($skipCount)      { $url.= '&skipCount='.(int)$skipCount; }
 		if ($this->succinct) { $url.= '&succinct=true'; }
 
 		return $this->doJSONRequest($url);
