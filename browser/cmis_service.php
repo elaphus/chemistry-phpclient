@@ -8,6 +8,8 @@ include __DIR__.'/authenticated_web_service.php';
 
 class CMISService extends AuthenticatedWebService
 {
+	const ARG_SEPARATOR = '&';
+
 	protected $repositoryUrl;
 	protected $repositoryId;
 	protected $rootFolderUrl;
@@ -65,8 +67,10 @@ class CMISService extends AuthenticatedWebService
 	 */
 	public function getFolderParent($folderId)
 	{
-		$url = "{$this->rootFolderUrl}?objectId=$folderId&cmisselector=parent";
-		if ($this->succinct) { $url.= '&succinct=true'; }
+		$params = ['objectId'=>$folderId, 'cmisselector'=>'parent'];
+		if ($this->succinct) { $params['succinct'] = 'true'; }
+
+		$url = $this->rootFolderUrl.'?'.http_build_query($params, null, self::ARG_SEPARATOR);
 
 		return $this->doJSONRequest($url);
 	}
@@ -78,9 +82,11 @@ class CMISService extends AuthenticatedWebService
 	 */
 	public function getChildren($folderId, $skipCount=0)
 	{
-		$url = $this->rootFolderUrl."?objectId=$folderId&maxItems={$this->maxItems}";
-		if ($skipCount)      { $url.= '&skipCount='.(int)$skipCount; }
-		if ($this->succinct) { $url.= '&succinct=true'; }
+		$params = ['objectId'=>$folderId, 'maxItems'=>$this->maxItems];
+		if ($skipCount)      { $params['skipCount'] = (int)$skipCount; }
+		if ($this->succinct) { $params['succinct' ] = 'true'; }
+
+		$url = $this->rootFolderUrl.'?'.http_build_query($params, null, self::ARG_SEPARATOR);
 
 		return $this->doJSONRequest($url);
 	}
@@ -97,9 +103,13 @@ class CMISService extends AuthenticatedWebService
 	 */
 	public function getChildrenByPath($path, $skipCount=0)
 	{
-		$url = $this->rootFolderUrl."$path?maxItems={$this->maxItems}";
-		if ($skipCount)      { $url.= '&skipCount='.(int)$skipCount; }
-		if ($this->succinct) { $url.= '&succinct=true'; }
+		$path = str_replace(' ', '+', $path);
+
+		$params = ['maxItems' => $this->maxItems];
+		if ($skipCount)      { $params['skipCount'] = (int)$skipCount; }
+		if ($this->succinct) { $params['succinct' ] = 'true'; }
+
+		$url = $this->rootFolderUrl.$path.'?'.http_build_query($params, null, self::ARG_SEPARATOR);
 
 		return $this->doJSONRequest($url);
 	}
@@ -116,8 +126,10 @@ class CMISService extends AuthenticatedWebService
 	 */
 	public function getObject($objectId)
 	{
-		$url = $this->rootFolderUrl."?objectId=$objectId&cmisselector=object";
-		if ($this->succinct) { $url.= '&succinct=true'; }
+		$params = ['objectId'=>$objectId, 'cmisselector'=>'object'];
+		if ($this->succinct) { $params['succinct'] = 'true'; }
+
+		$url = $this->rootFolderUrl.'?'.http_build_query($params, null, self::ARG_SEPARATOR);
 
 		return $this->doJSONRequest($url);
 	}
@@ -128,8 +140,10 @@ class CMISService extends AuthenticatedWebService
 	 */
 	public function getObjectByPath($path)
 	{
-		$url = $this->rootFolderUrl.$path.'?cmisselector=object';
-		if ($this->succinct) { $url.= '&succinct=true'; }
+		$params = ['cmisselector'=>'object'];
+		if ($this->succinct) { $params['succinct'] = 'true'; }
+
+		$url = $this->rootFolderUrl.$path.'?'.http_build_query($params, null, self::ARG_SEPARATOR);
 
 		return $this->doJSONRequest($url);
 	}
@@ -149,10 +163,11 @@ class CMISService extends AuthenticatedWebService
 	 */
 	public function getContentStream($objectId, $streamId=null)
 	{
-		$url = $this->rootFolderUrl."?cmisaction=getContentStream&objectId=$objectId";
-		if ($streamId) {
-			$url.= "&streamId=$streamId";
-		}
+		$params = ['cmisaction'=>'getContentStream', 'objectId'=>$objectId];
+		if ($streamId) { $params['streamId'] = $streamId; }
+
+		$url = $this->rootFolderUrl.'?'.http_build_query($params, null, self::ARG_SEPARATOR);
+
 		return $this->doRequest($url);
 	}
 
@@ -178,9 +193,11 @@ class CMISService extends AuthenticatedWebService
      */
 	public function query($query, $skipCount=0)
 	{
-		$url = $this->repositoryUrl."/doQuery?maxItems={$this->maxItems}&q=".urlencode($query);
-		if ($skipCount)      { $url.= '&skipCount='.(int)$skipCount; }
-		if ($this->succinct) { $url.= '&succinct=true'; }
+		$params = ['maxItems'=>$this->maxItems, 'q'=>urlencode($query)];
+		if ($skipCount)      { $params['skipCount'] = (int)$skipCount; }
+		if ($this->succinct) { $params['succinct' ] = 'true'; }
+
+		$url = $this->rootFolderUrl.'/doQuery?'.http_build_query($params, null, self::ARG_SEPARATOR);
 
 		return $this->doJSONRequest($url);
 	}
