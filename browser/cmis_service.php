@@ -17,15 +17,23 @@ class CMISService extends AuthenticatedWebService
 	public $succinct = false;
 	public $maxItems = 10;
 
+	/**
+	 * In order to support any CMIS server, you must pass in the full URL
+	 * to your server's CMIS browser binding endpoint.
+	 *
+	 * @param string $repositoryUrl CMIS browser binding endpoint
+	 * @param string $username
+	 * @param string $password
+	 * @param string $repositoryId
+	 */
 	public function __construct($repositoryUrl, $username, $password, $repositoryId)
 	{
-        $this->repositoryUrl = "$repositoryUrl/api/$repositoryId/public/cmis/versions/1.1/browser";
+        // Test the URL by doing a JSON request for the rootFolderUrl
+        parent::__construct($repositoryUrl, $username, $password);
+        $json = $this->doJSONRequest($repositoryUrl);
+
+        $this->repositoryUrl = $repositoryUrl;
         $this->repositoryId  = $repositoryId;
-
-		parent::__construct($this->repositoryUrl, $username, $password);
-
-		$json = $this->doJSONRequest($this->repositoryUrl);
-
 		$this->rootFolderUrl = $json->$repositoryId->rootFolderUrl;
 	}
 

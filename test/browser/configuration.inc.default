@@ -1,5 +1,5 @@
 <?php
-define('CMIS_URL',      'http://localhost/alfresco');
+define('CMIS_URL',      'http://localhost/alfresco/api/-default-/public/cmis/versions/1.1/browser');
 define('CMIS_USERNAME', 'username');
 define('CMIS_PASSWORD', 'password');
 define('CMIS_REPOSITORY_ID', '-default-');
