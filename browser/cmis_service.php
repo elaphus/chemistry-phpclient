@@ -15,16 +15,17 @@ class CMISService extends AuthenticatedWebService
 	protected $rootFolderUrl;
 
 	public $succinct = false;
-	public $maxItems = 20;
+	public $maxItems = 10;
 
 	public function __construct($repositoryUrl, $username, $password, $repositoryId)
 	{
-		parent::__construct($repositoryUrl, $username, $password);
+        $this->repositoryUrl = "$repositoryUrl/api/$repositoryId/public/cmis/versions/1.1/browser";
+        $this->repositoryId  = $repositoryId;
 
-		$json = $this->doJSONRequest($repositoryUrl);
+		parent::__construct($this->repositoryUrl, $username, $password);
 
-		$this->repositoryUrl = $repositoryUrl;
-		$this->repositoryId  = $repositoryId;
+		$json = $this->doJSONRequest($this->repositoryUrl);
+
 		$this->rootFolderUrl = $json->$repositoryId->rootFolderUrl;
 	}
 
@@ -193,11 +194,11 @@ class CMISService extends AuthenticatedWebService
      */
 	public function query($query, $skipCount=0)
 	{
-		$params = ['maxItems'=>$this->maxItems, 'q'=>urlencode($query)];
+		$params = ['cmisselector'=>'query', 'q'=>$query, 'maxItems'=>$this->maxItems];
 		if ($skipCount)      { $params['skipCount'] = (int)$skipCount; }
 		if ($this->succinct) { $params['succinct' ] = 'true'; }
 
-		$url = $this->rootFolderUrl.'/doQuery?'.http_build_query($params, null, self::ARG_SEPARATOR);
+		$url = $this->repositoryUrl.'?'.http_build_query($params, null, self::ARG_SEPARATOR);
 
 		return $this->doJSONRequest($url);
 	}
