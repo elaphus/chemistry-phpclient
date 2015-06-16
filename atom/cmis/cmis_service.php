@@ -196,14 +196,29 @@ class CMISService extends CMISRepositoryWrapper {
 	 * @param string $propertyId
 	 * @return string
 	 */
-	private function getPropertyType($typeId, $propertyId) {
+	private function getPropertyType($typeId, $secondaryTypeIds, $propertyId) {
 		if (isset($this->_type_cache[$typeId])) {
-			if ($this->_type_cache[$typeId]->properties) {
+			if (isset($this->_type_cache[$typeId]->properties[$propertyId])) { // Is there a conition where _type_cache[$typeId] wont have a properties memeber.
 				return $this->_type_cache[$typeId]->properties[$propertyId]["cmis:propertyType"];
 			}
 		}
 		$obj = $this->getTypeDefinition($typeId);
-		return $obj->properties[$propertyId]["cmis:propertyType"];
+    if (isset($obj->properties[$propertyId])) {
+		    return $obj->properties[$propertyId]["cmis:propertyType"];
+    }
+
+    foreach ($secondaryTypeIds as $secondaryId){
+      if (isset($this->_type_cache[$secondaryId])) {
+        if (isset($this->_type_cache[$secondaryId]->properties[$propertyId])) {
+          return $this->_type_cache[$secondaryId]->properties[$propertyId]["cmis:propertyType"];
+        }
+      }
+      $obj = $this->getTypeDefinition($secondaryId);
+      if (isset($obj->properties[$propertyId])) {
+          return $obj->properties[$propertyId]["cmis:propertyType"];
+      }
+    }
+    return false;
 	}
 
 	/**
@@ -638,7 +653,7 @@ EOT;
      * @param array $propMap
      * @return string
      */
-	private function processPropertyTemplates($objectType, $propMap) {
+	private function processPropertyTemplates($objectType, $secondaryTypeIds, $propMap) {
         $propertyTypeMap = array(
             "integer"  => "Integer",
             "boolean"  => "Boolean",
@@ -655,7 +670,7 @@ EOT;
 		$hash_values     = array();
 
 		foreach ($propMap as $propId => $propValue) {
-			$hash_values['propertyType'] = $propertyTypeMap[$this->getPropertyType($objectType, $propId)];
+			$hash_values['propertyType'] = $propertyTypeMap[$this->getPropertyType($objectType, $secondaryTypeIds, $propId)];
 			$hash_values['propertyId']   = $propId;
 			if (is_array($propValue)) {
 				$hash_values['properties'] = '';
@@ -830,7 +845,14 @@ EOT;
 		if (!isset($hash_values["cmis:objectTypeId"])) {
 			$hash_values["cmis:objectTypeId"]=$objectType;
 		}
-		$properties_xml = $this->processPropertyTemplates($objectType, $hash_values);
+
+    if (isset($hash_values["cmis:secondaryObjectTypeIds"]) && is_array($hash_values["cmis:secondaryObjectTypeIds"])) {
+      $secondaryTypeIds = $hash_values["cmis:secondaryObjectTypeIds"];
+    } else {
+      $secondaryTypeIds = array();
+    }
+
+		$properties_xml = $this->processPropertyTemplates($objectType, $secondaryTypeIds, $hash_values);
 
 		$hash_values = is_array($options) ? $options : array();
 		$hash_values["PROPERTIES"] = $properties_xml;
@@ -864,14 +886,21 @@ EOT;
 			$objType = $properties['cmis:objectTypeId'];
 		}
 		elseif (isset($properties["cmis:objectId"])) {
-			$objType=$this->getObjectType($properties["cmis:objectId"]);
+			$objType = $this->getObjectType($properties["cmis:objectId"]);
 		}
 
 		$myURL = parent::getOpUrl($url, $options);
 
 		//DEBUG
 		//print("DEBUG: postEntry: myURL = " . $myURL);
-		$properties_xml = $this->processPropertyTemplates($objType, $properties);
+
+    if (isset($properties["cmis:secondaryObjectTypeIds"]) && is_array($properties["cmis:secondaryObjectTypeIds"])) {
+      $secondaryTypeIds = $properties["cmis:secondaryObjectTypeIds"];
+    } else {
+      $secondaryTypeIds = array();
+    }
+
+		$properties_xml = $this->processPropertyTemplates($objType, $secondaryTypeIds, $properties);
 		//print("DEBUG: postEntry: properties_xml = " . $properties_xml);
 
 		$hash_values = is_array($options) ? $options : array();
@@ -928,7 +957,13 @@ EOT;
 			$properties['cmis:changeToken'] = $this->_changeToken_cache[$objectId];
 		}
 
-		$properties_xml = $this->processPropertyTemplates($objectType, $hash_values);
+    if (isset($properties["cmis:secondaryObjectTypeIds"]) && is_array($properties["cmis:secondaryObjectTypeIds"])) {
+      $secondaryTypeIds = $properties["cmis:secondaryObjectTypeIds"];
+    } else {
+      $secondaryTypeIds = array();
+    }
+
+		$properties_xml = $this->processPropertyTemplates($objectType, $secondaryTypeIds, $hash_values);
 
 		$hash_values = is_array($options) ? $options : array();
 		$fixed_hash_values = array(
