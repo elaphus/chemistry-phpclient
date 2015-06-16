@@ -627,7 +627,7 @@ EOT;
 	private static function getPropertyTemplate() {
 		return "
 		<cmis:property{propertyType} propertyDefinitionId=\"{propertyId}\">
-			<cmis:value>{properties}</cmis:value>
+			{properties}
 		</cmis:property{propertyType}>
 		";
 	}
@@ -658,12 +658,13 @@ EOT;
 			$hash_values['propertyType'] = $propertyTypeMap[$this->getPropertyType($objectType, $propId)];
 			$hash_values['propertyId']   = $propId;
 			if (is_array($propValue)) {
+				$hash_values['properties'] = '';
 				foreach ($propValue as $val) {
-                    $hash_values['properties'].= sprintf('<cmis:value>%s</cmis:value>', $val);
+          			$hash_values['properties'].= sprintf('<cmis:value>%s</cmis:value>', $val);
 				}
 			}
 			else {
-				$hash_values['properties'] = $propValue;
+				$hash_values['properties'] = sprintf('<cmis:value>%s</cmis:value>', $propValue);
 			}
 			$propertyContent .= parent::processTemplate(self::getPropertyTemplate(), $hash_values);
 		}
