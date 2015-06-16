@@ -197,27 +197,27 @@ class CMISService extends CMISRepositoryWrapper {
 	 * @return string
 	 */
 	private function getPropertyType($typeId, $secondaryTypeIds, $propertyId) {
-		if (isset($this->_type_cache[$typeId])) {
-			if (isset($this->_type_cache[$typeId]->properties[$propertyId])) { // Is there a conition where _type_cache[$typeId] wont have a properties memeber.
-				return $this->_type_cache[$typeId]->properties[$propertyId]["cmis:propertyType"];
-			}
-		}
+        if (isset($this->_type_cache[$typeId])) {
+            if (isset($this->_type_cache[$typeId]->properties[$propertyId])) { // Is there a conition where _type_cache[$typeId] wont have a properties memeber.
+                return $this->_type_cache[$typeId]->properties[$propertyId]["cmis:propertyType"];
+            }
+        }
 		$obj = $this->getTypeDefinition($typeId);
-        
+
         if (isset($obj->properties[$propertyId])) {
-    		    return $obj->properties[$propertyId]["cmis:propertyType"];
+            return $obj->properties[$propertyId]["cmis:propertyType"];
         }
 
         foreach ($secondaryTypeIds as $secondaryId){
-          if (isset($this->_type_cache[$secondaryId])) {
-            if (isset($this->_type_cache[$secondaryId]->properties[$propertyId])) {
-              return $this->_type_cache[$secondaryId]->properties[$propertyId]["cmis:propertyType"];
+            if (isset($this->_type_cache[$secondaryId])) {
+                if (isset($this->_type_cache[$secondaryId]->properties[$propertyId])) {
+                    return $this->_type_cache[$secondaryId]->properties[$propertyId]["cmis:propertyType"];
+                }
             }
-          }
-          $obj = $this->getTypeDefinition($secondaryId);
-          if (isset($obj->properties[$propertyId])) {
-              return $obj->properties[$propertyId]["cmis:propertyType"];
-          }
+            $obj = $this->getTypeDefinition($secondaryId);
+            if (isset($obj->properties[$propertyId])) {
+                return $obj->properties[$propertyId]["cmis:propertyType"];
+            }
         }
         return false;
 	}
