@@ -248,6 +248,7 @@ class CMISRepositoryWrapper
         if ($contentType)      { curl_setopt($session, CURLOPT_HTTPHEADER, array ("Content-Type: " . $contentType)); }
         if ($content)          { curl_setopt($session, CURLOPT_POSTFIELDS, $content); }
         if ($method == "POST") { curl_setopt($session, CURLOPT_POST,       true); }
+        if ($method == "PUT")  { curl_setopt($session, CURLOPT_POST,       true); }
 
         // apply addl. cURL options
         // WARNING: this may override previously set options
@@ -259,7 +260,7 @@ class CMISRepositoryWrapper
 
         //TODO: Make this storage optional
         $response = curl_exec($session);
-        if ($response) {
+        if ($response !== false) {
 			$retval = new stdClass();
 			$retval->url               = $url;
 			$retval->method            = $method;
