@@ -476,10 +476,16 @@ class CMISRepositoryWrapper
                     if ($i) {
                         $k = $i->nodeValue;
                         $vs = $pn->getElementsByTagName("value");
-                        if ($vs->length) {
+   
+                        if ($vs->length == 1) {
                             $v = $vs->item(0)->nodeValue;
-
                             $retval->properties[$k] = $v;
+                        } elseif ($vs->length > 1) {
+                            $retval->properties[$k] = array();
+                            for($j = 0; $j < $vs->length; $j++) {
+                                $v = $vs->item($j)->nodeValue;
+                                $retval->properties[$k][] = $v;
+                            }
                         }
                     }
                 }
